@@ -35,15 +35,37 @@ const {Note} = require('../models/note');
 //   });
 
 
+// mongoose
+//   .connect(MONGODB_URI)
+//   .then(() => {
+//     const newItem = {
+//       title: 'Cats',
+//       content: 'cats r us' 
+//     };
+
+//     return Note.create(newItem).then(item => console.log(item));
+//   })
+//   .then(() => {
+//     return mongoose.disconnect().then(() => {
+//       console.info('Disconnected');
+//     });
+//   })
+//   .catch(err => {
+//     console.error(`ERROR: ${err.message}`);
+//     console.error(err);
+//   });
+
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
-    const newItem = {
-      title: 'Cats',
-      content: 'cats r us' 
-    };
-
-    return Note.create(newItem).then(item => console.log(item));
+    return Note.find(
+      { $text: { $search: 'Lady Gaga' } },
+      { score: { $meta: 'textScore' } }
+    )
+      .sort({ score: { $meta: 'textScore' } })
+      .then(results => {
+        console.log(results);
+      });
   })
   .then(() => {
     return mongoose.disconnect().then(() => {

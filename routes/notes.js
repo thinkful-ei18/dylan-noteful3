@@ -19,8 +19,7 @@ router.get('/notes', (req, res, next) => {
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/notes/:id', (req, res, next) => {
-
-  if(!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     const err = new Error(`${req.params.id} is not a valid ID`);
     err.status = 400;
     return next(err);
@@ -28,7 +27,7 @@ router.get('/notes/:id', (req, res, next) => {
 
   Note.findById(req.params.id)
     .then(response => {
-      if (response){
+      if (response) {
         res.json(response);
       } else {
         next();
@@ -38,12 +37,10 @@ router.get('/notes/:id', (req, res, next) => {
       console.log(err);
       next(err);
     });
-
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
-
   const requiredFields = ['title', 'content'];
   requiredFields.forEach(field => {
     if (!(field in req.body)) {
@@ -62,7 +59,10 @@ router.post('/notes', (req, res, next) => {
     .then(response => {
       console.log(response);
       if (response) {
-        res.location(`${req.originalUrl}/${response.id}`).status(201).json(response);
+        res
+          .location(`${req.originalUrl}/${response.id}`)
+          .status(201)
+          .json(response);
       } else {
         next();
       }
@@ -74,7 +74,7 @@ router.post('/notes', (req, res, next) => {
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/notes/:id', (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const updateItem = {};
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     const err = new Error(`${req.params.id} is not a valid ID`);
@@ -82,7 +82,9 @@ router.put('/notes/:id', (req, res, next) => {
     return next(err);
   }
   if (!(id && req.body.id && id === req.body.id)) {
-    const err = new Error(`Params id: ${id} and Body id: ${req.body.id} must match`);
+    const err = new Error(
+      `Params id: ${id} and Body id: ${req.body.id} must match`
+    );
     err.status = 400;
     return next(err);
   }
@@ -92,10 +94,8 @@ router.put('/notes/:id', (req, res, next) => {
       updateItem[field] = req.body[field];
     }
   });
-  
 
-
-  Note.findByIdAndUpdate(id, updateItem, {new: true})
+  Note.findByIdAndUpdate(id, updateItem, { new: true })
     .then(response => {
       if (response) {
         res.status(200).json(response);
@@ -106,7 +106,6 @@ router.put('/notes/:id', (req, res, next) => {
     .catch(err => {
       next(err);
     });
-
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
