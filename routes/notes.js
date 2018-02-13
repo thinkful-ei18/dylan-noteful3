@@ -74,18 +74,51 @@ router.post('/notes', (req, res, next) => {
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/notes/:id', (req, res, next) => {
+  const {id} = req.params;
+  const updateItem = {};
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    const err = new Error(`${req.params.id} is not a valid ID`);
+    err.status = 400;
+    return next(err);
+  }
+  if (!(id && req.body.id && id === req.body.id)) {
+    const err = new Error(`Params id: ${id} and Body id: ${req.body.id} must match`);
+    err.status = 400;
+    return next(err);
+  }
+  const updateFields = ['title', 'content'];
+  updateFields.forEach(field => {
+    if (field in req.body) {
+      updateItem[field] = req.body[field];
+    }
+  });
+  
 
-  console.log('Update a Note');
-  res.json({ id: 2 });
+
+  Note.findByIdAndUpdate(id, updateItem, {new: true})
+    .then(response => {
+      if (response) {
+        res.status(200).json(response);
+      } else {
+        next();
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
 
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/notes/:id', (req, res, next) => {
-
-  console.log('Delete a Note');
-  res.status(204).end();
-
+  const { id } = req.params;
+  Note.findByIdAndRemove(id)
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 module.exports = router;
