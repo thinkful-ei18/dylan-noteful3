@@ -4,6 +4,7 @@ const express = require('express');
 // Create an router instance (aka "mini-app")
 const router = express.Router();
 const { Note } = require('../models/note');
+const mongoose = require('mongoose');
 
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/notes', (req, res, next) => {
@@ -18,6 +19,12 @@ router.get('/notes', (req, res, next) => {
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/notes/:id', (req, res, next) => {
+
+  if(!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    const err = new Error(`${req.params.id} is not a valid ID`);
+    err.status = 400;
+    return next(err);
+  }
 
   Note.findById(req.params.id)
     .then(response => {
