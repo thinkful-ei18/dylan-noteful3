@@ -8,7 +8,12 @@ const mongoose = require('mongoose');
 
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/notes', (req, res, next) => {
-  Note.find()
+  const { searchTerm } = req.query;
+  Note.find(
+    { $text: { $search: searchTerm } },
+    { score: { $meta: 'textScore' } }
+  )
+    .sort({ score: { $meta: 'textScore' } })
     .then(response => {
       res.json(response);
     })
