@@ -28,13 +28,14 @@ router.get('/notes/:id', (req, res, next) => {
 
   Note.findById(req.params.id)
     .then(response => {
-      if (!response.error){
+      if (response){
         res.json(response);
       } else {
         next();
       }
     })
     .catch(err => {
+      console.log(err);
       next(err);
     });
 
