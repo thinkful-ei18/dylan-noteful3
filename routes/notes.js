@@ -9,27 +9,19 @@ const mongoose = require('mongoose');
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/notes', (req, res, next) => {
   const { searchTerm } = req.query;
-  if(searchTerm) {
-    Note.find(
-      { $text: { $search: searchTerm } },
-      { score: { $meta: 'textScore' } }
-    )
-      .sort({ score: { $meta: 'textScore' } })
-      .then(response => {
-        res.json(response);
-      })
-      .catch(err => {
-        next(err);
-      });
-  } else {
-    Note.find()
-      .then(response => {
-        res.json(response);
-      })
-      .catch(err => {
-        next(err);
-      });
+  const [ filter, projection ] = [ {}, {} ];
+  if (searchTerm) {
+    filter.$text = { $search: searchTerm };
+    projection.score = { $meta: 'textScore' };
   }
+  Note.find(filter, projection)
+    .sort(projection)
+    .then(response => {
+      res.json(response);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 /* ========== GET/READ A SINGLE ITEM ========== */
