@@ -10,16 +10,26 @@ router.get('/notes', (req, res, next) => {
   Note.find()
     .then(response => {
       res.json(response);
+    })
+    .catch(err => {
+      next(err);
     });
-  
-
 });
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/notes/:id', (req, res, next) => {
 
-  console.log('Get a Note');
-  res.json({ id: 2 });
+  Note.findById(req.params.id)
+    .then(response => {
+      if (!response.error){
+        res.json(response);
+      } else {
+        next();
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
 
 });
 
