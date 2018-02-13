@@ -44,9 +44,32 @@ router.get('/notes/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
 
-  console.log('Create a Note');
-  res.location('path/to/new/document').status(201).json({ id: 2 });
+  const requiredFields = ['title', 'content'];
+  requiredFields.forEach(field => {
+    if (!(field in req.body)) {
+      const err = new Error(`Missing ${field} in request body`);
+      err.status = 400;
+      return next(err);
+    }
+  });
 
+  const newItem = {
+    title: req.body.title,
+    content: req.body.content
+  };
+
+  Note.create(newItem)
+    .then(response => {
+      console.log(response);
+      if (response) {
+        res.location(`${req.originalUrl}/${response.id}`).status(201).json(response);
+      } else {
+        next();
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
