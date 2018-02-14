@@ -141,8 +141,6 @@ describe('POST /notes', function() {
       content: 'I am a cat'
     };
 
-    let response;
-
     return chai.request(app)
       .post('/v3/notes')
       .send(newItem)
@@ -157,4 +155,47 @@ describe('POST /notes', function() {
         expect(response).to.equal(9);
       });
   });
+
+  it('should 400 error when not all fields are present', function() {
+    let newItem = { content: 'I am a cat' };
+    let spy = chai.spy();
+    return chai.request(app)
+      .post('/v3/notes')
+      .send(newItem)
+      .then(spy)
+      .then(() => {
+        expect(spy).to.not.have.been.called();
+      })
+      .catch(err => {
+        const res = err.response;
+        expect(res).to.have.status(400);
+        expect(res.body.message).to.equal('Missing title in request body');
+      });
+  });
+});
+
+describe('PUT notes/:id', function() {
+  it('should update a note with proper validation', function() {
+    let updateItem = {
+      title: 'DOGS',
+      id: '000000000000000000000000'
+    };
+
+    return chai.request(app)
+      .put('/v3/notes/000000000000000000000000')
+      .send(updateItem)
+      .then(response => {
+        expect(response).to.have.status(200);
+        expect(response.body).to.be.an('object');
+        expect(response.body.title).to.equal(updateItem.title);
+        expect(response.body.id).to.equal(updateItem.id);
+        return Note.findById(response.body.id);
+      })
+      .then(note => {
+        expect(note.title).to.equal(updateItem.title);
+        expect(note.id).to.equal(updateItem.id);
+      });
+  });
+
+  it()
 });
