@@ -80,7 +80,7 @@ describe('GET /notes', function() {
 });
 
 describe('GET notes/:id', function() {
-  it.only('should return the proper note', function() {
+  it('should return the proper note', function() {
     let itemId;
     return chai.request(app)
       .get('/v3/notes')
@@ -96,7 +96,7 @@ describe('GET notes/:id', function() {
       });
   });
 
-  it.only('should send an error on a invalid id format', function() {
+  it('should send an error on a invalid id format', function() {
     let badId = '00000000000000000000000';
     const spy = chai.spy();
     return chai.request(app)
@@ -110,6 +110,22 @@ describe('GET notes/:id', function() {
         expect(res).to.have.status(400);
         expect(res.body.message).to.equal(`${badId} is not a valid ID`);
       });
+  });
 
+  it('should send an 404 error on a bad id', function() {
+    let badId = '000000000000000000000009';
+    const spy = chai.spy();
+    return chai
+      .request(app)
+      .get(`/v3/notes/${badId}`)
+      .then(spy)
+      .then(() => {
+        expect(spy).to.not.have.been.called();
+      })
+      .catch(err => {
+        const res = err.response;
+        expect(res).to.have.status(404);
+        expect(res.body.message).to.equal('Not Found');
+      });
   });
 });
