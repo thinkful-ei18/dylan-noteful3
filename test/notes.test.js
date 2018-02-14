@@ -135,7 +135,26 @@ describe('GET notes/:id', function() {
 });
 
 describe('POST /notes', function() {
-  it.only('should post a new note with proper attributes', function() {
+  it('should post a new note with proper attributes', function() {
+    let newItem = {
+      title: 'CATS',
+      content: 'I am a cat'
+    };
 
+    let response;
+
+    return chai.request(app)
+      .post('/v3/notes')
+      .send(newItem)
+      .then(response => {
+        expect(response).to.have.status(201);
+        expect(response.body).to.be.an('object');
+        expect(response.body.title).to.equal(newItem.title);
+        expect(response.body.content).to.equal(newItem.content);
+        return Note.count();
+      })
+      .then(response => {
+        expect(response).to.equal(9);
+      });
   });
 });
