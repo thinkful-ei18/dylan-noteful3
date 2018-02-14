@@ -80,7 +80,7 @@ describe('GET /notes', function() {
 });
 
 describe('GET notes/:id', function() {
-  it.only('should return the proper note', function() {
+  it('should return the proper note', function() {
     let itemId;
     return chai.request(app)
       .get('/v3/notes')
@@ -131,5 +131,11 @@ describe('GET notes/:id', function() {
         expect(res).to.have.status(404);
         expect(res.body.message).to.equal('Not Found');
       });
+  });
+});
+
+describe('POST /notes', function() {
+  it.only('should post a new note with proper attributes', function() {
+
   });
 });
