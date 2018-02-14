@@ -117,8 +117,12 @@ router.put('/notes/:id', (req, res, next) => {
 router.delete('/notes/:id', (req, res, next) => {
   const { id } = req.params;
   Note.findByIdAndRemove(id)
-    .then(() => {
-      res.status(204).end();
+    .then((response) => {
+      if(response) {
+        res.status(204).end();
+      } else {
+        next();
+      }
     })
     .catch(err => {
       next(err);

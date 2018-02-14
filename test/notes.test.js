@@ -222,7 +222,9 @@ describe('PUT notes/:id', function() {
       .catch(err => {
         let res = err.response;
         expect(res).to.have.status(400);
-        expect(res.body.message).to.equal('Params id: 000000000000000000000000 and Body id: undefined must match');
+        expect(res.body.message).to.equal(
+          'Params id: 000000000000000000000000 and Body id: undefined must match'
+        );
       });
   });
 
@@ -242,7 +244,9 @@ describe('PUT notes/:id', function() {
       .catch(err => {
         let res = err.response;
         expect(res).to.have.status(400);
-        expect(res.body.message).to.equal('00000000000000000000000 is not a valid ID');
+        expect(res.body.message).to.equal(
+          '00000000000000000000000 is not a valid ID'
+        );
       });
   });
 
@@ -260,6 +264,45 @@ describe('PUT notes/:id', function() {
       })
       .catch(err => {
         let res = err.response;
+        expect(res).to.have.status(404);
+        expect(res.body.message).to.equal('Not Found');
+      });
+  });
+});
+
+describe('DELETE /notes/:id', function() {
+  it('should delete a note with the proper id', function() {
+    let id;
+
+    return Note.findOne()
+      .then(note => {
+        id = note.id;
+        return id;
+      })
+      .then(() => {
+        return chai.request(app).delete(`/v3/notes/${id}`);
+      })
+      .then(response => {
+        expect(response).to.have.status(204);
+        return Note.findById(id);
+      })
+      .then(note => {
+        expect(note).to.equal(null);
+      });
+  });
+
+  it.only('should 404 with an id that does not exist', function() {
+    const spy = chai.spy();
+
+    return chai
+      .request(app)
+      .delete('/v3/notes/000000000000000000000009')
+      .then(spy)
+      .then(() => {
+        expect(spy).to.not.have.been.called();
+      })
+      .catch(err => {
+        const res = err.response;
         expect(res).to.have.status(404);
         expect(res.body.message).to.equal('Not Found');
       });
