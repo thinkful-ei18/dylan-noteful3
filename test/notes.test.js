@@ -47,5 +47,19 @@ describe('GET /notes', function() {
       });
   });
 
-
+  it('should return a filtered list of notes with scores if there is a search term', function() {
+    let response;
+    return chai.request(app)
+      .get('/v3/notes?searchTerm=Lorem')
+      .then(_response => {
+        response = _response;
+        expect(response).to.have.status(200);
+        expect(response.body).to.have.length(4);
+        expect(response.body[0].score).to.equal(0.5076923076923077);
+        return Note.find({$text: { $search: 'Lorem' } }).count();
+      })
+      .then(count => {
+        expect(count).to.equal(response.body.length);
+      });
+  });
 });
