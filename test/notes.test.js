@@ -291,7 +291,7 @@ describe('DELETE /notes/:id', function() {
       });
   });
 
-  it.only('should 404 with an id that does not exist', function() {
+  it('should 404 with an id that does not exist', function() {
     const spy = chai.spy();
 
     return chai
