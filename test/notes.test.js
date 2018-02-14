@@ -1,5 +1,3 @@
-import { mongo } from 'mongoose';
-
 'use strict';
 const app = require('../server');
 const chai = require('chai');
@@ -30,4 +28,24 @@ afterEach(function() {
 
 after(function() {
   return mongoose.disconnect();
+});
+
+describe('GET /notes', function() {
+  it('should return a list of all notes on the database with no search term', function() {
+    let response;
+    return chai.request(app)
+      .get('/v3/notes')
+      .then(_response => {
+        response = _response;
+        expect(response).to.have.status(200);
+        expect(response.body).to.be.an('array');
+        expect(response.body).to.have.length(8);
+        return Note.count();
+      })
+      .then(count => {
+        expect(count).to.equal(response.body.length);
+      });
+  });
+
+
 });
