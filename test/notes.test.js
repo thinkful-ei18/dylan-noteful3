@@ -62,4 +62,19 @@ describe('GET /notes', function() {
         expect(count).to.equal(response.body.length);
       });
   });
+
+  it.only('should return the correct values', function() {
+    let item;
+    return chai.request(app)
+      .get('/v3/notes')
+      .then(_response => {
+        item = _response.body[0];
+        return Note.findById(item.id);
+      })
+      .then(response => {
+        expect(item.content).to.equal(response.content);
+        expect(item.id).to.equal(response.id);
+        expect(item.title).to.equal(response.title);
+      });
+  });
 });
