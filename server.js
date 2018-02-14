@@ -37,7 +37,6 @@ app.use(function (req, res, next) {
 // Add NODE_ENV check to prevent stacktrace leak
 app.use(function (err, req, res, next) {
   res.status(err.status || 500);
-  console.log(err.message);
   res.json({
     message: err.message,
     error: app.get('env') === 'development' ? err : {}

@@ -81,6 +81,35 @@ describe('GET /notes', function() {
 
 describe('GET notes/:id', function() {
   it.only('should return the proper note', function() {
+    let itemId;
+    return chai.request(app)
+      .get('/v3/notes')
+      .then(response => {
+        itemId = response.body[0].id;
+        return itemId;
+      }).then(itemId => {
+        return chai.request(app)
+          .get(`/v3/notes/${itemId}`);
+      })
+      .then(response => {
+        expect(response.body.id).to.equal(itemId);
+      });
+  });
+
+  it.only('should send an error on a invalid id format', function() {
+    let badId = '00000000000000000000000';
+    const spy = chai.spy();
+    return chai.request(app)
+      .get(`/v3/notes/${badId}`)
+      .then(spy)
+      .then(() => {
+        expect(spy).to.not.have.been.called();
+      })
+      .catch(err => {
+        const res = err.response;
+        expect(res).to.have.status(400);
+        expect(res.body.message).to.equal(`${badId} is not a valid ID`);
+      });
 
   });
 });
