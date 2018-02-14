@@ -245,4 +245,23 @@ describe('PUT notes/:id', function() {
         expect(res.body.message).to.equal('00000000000000000000000 is not a valid ID');
       });
   });
+
+  it('should return 404 with invalid id', function() {
+    let updateItem = { title: 'DOGS', id: '000000000000000000000009' };
+    const spy = chai.spy();
+
+    return chai
+      .request(app)
+      .put('/v3/notes/000000000000000000000009')
+      .send(updateItem)
+      .then(spy)
+      .then(() => {
+        expect(spy).to.not.have.been.called();
+      })
+      .catch(err => {
+        let res = err.response;
+        expect(res).to.have.status(404);
+        expect(res.body.message).to.equal('Not Found');
+      });
+  });
 });
