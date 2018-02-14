@@ -63,7 +63,7 @@ describe('GET /notes', function() {
       });
   });
 
-  it.only('should return the correct values', function() {
+  it('should return the correct values', function() {
     let item;
     return chai.request(app)
       .get('/v3/notes')
@@ -76,5 +76,11 @@ describe('GET /notes', function() {
         expect(item.id).to.equal(response.id);
         expect(item.title).to.equal(response.title);
       });
+  });
+});
+
+describe('GET notes/:id', function() {
+  it.only('should return the proper note', function() {
+
   });
 });
