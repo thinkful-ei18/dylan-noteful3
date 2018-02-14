@@ -80,7 +80,7 @@ describe('GET /notes', function() {
 });
 
 describe('GET notes/:id', function() {
-  it('should return the proper note', function() {
+  it.only('should return the proper note', function() {
     let itemId;
     return chai.request(app)
       .get('/v3/notes')
@@ -93,6 +93,10 @@ describe('GET notes/:id', function() {
       })
       .then(response => {
         expect(response.body.id).to.equal(itemId);
+        return Note.findById(itemId);
+      })
+      .then(note => {
+        expect(note.id).to.equal(itemId);
       });
   });
 
