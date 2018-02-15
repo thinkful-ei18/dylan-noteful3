@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const { Folder } = require('../models/folder');
+const { Note } = require('../models/note');
 const mongoose = require('mongoose');
 
 
@@ -105,14 +106,44 @@ router.put('/folders/:id', (req, res, next) => {
 
 router.delete('/folders/:id', (req, res, next) => {
   const { id } = req.params;
-  Folder.findByIdAndRemove(id)
+  // Folder.findByIdAndRemove(id)
+  //   .then(response => {
+  //     if (response) {
+  //       res.status(204).end();
+  //     } else {
+  //       next();
+  //     }     
+  //   });
+
+  Note.find({ folderId: id })
+    .then(response => {
+      if (response.length > 0) {
+        const err = new Error('This folder has associated notes. Delete those first before deleting folder.');
+        err.status = 400;
+        return next(err);
+      }
+      reeturn Folder.findByIdAndRemove(id);
+    })
     .then(response => {
       if (response) {
         res.status(204).end();
       } else {
         next();
-      }     
-    });
+      }
+    })
+    .catch(next);
+
+  // Folder.findByIdAndRemove(id)
+  //   .then(() => {
+  //     return Note.update({ folderId: id }, { $set: { folderId: null } }, { multi: true });
+  //   })
+  //   .then(response => {
+  //     if (response) {
+  //       res.status(204).end();
+  //     } else {
+  //       next();
+  //     }
+  //   });
 });
 
 module.exports = router;

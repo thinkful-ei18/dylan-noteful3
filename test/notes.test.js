@@ -26,6 +26,7 @@ describe('Before and After Hooks', function() {
   });
 
   afterEach(function() {
+    sandbox.restore();
     return mongoose.connection.db.dropDatabase();
   });
 
@@ -102,7 +103,7 @@ describe('Before and After Hooks', function() {
         });
     });
 
-    it.only('should catch errors and respond properly', function() {
+    it('should catch errors and respond properly', function() {
       const spy = chai.spy();
       sandbox.stub(express.response, 'json').throws('TypeError');
       return chai
@@ -170,11 +171,26 @@ describe('Before and After Hooks', function() {
           expect(spy).to.not.have.been.called();
         });
     });
+
+    it('should catch errors and respond properly', function() {
+      const spy = chai.spy();
+      sandbox.stub(express.response, 'json').throws('TypeError');
+      return chai
+        .request(app)
+        .get('/v3/notes/000000000000000000000000')
+        .then(spy)
+        .catch(err => {
+          expect(err).to.have.status(500);
+        })
+        .then(() => {
+          expect(spy).to.not.have.been.called();
+        });
+    });
   });
 
   describe('POST /notes', function() {
     it('should post a new note with proper attributes', function() {
-      let newItem = { title: 'CATS', content: 'I am a cat' };
+      let newItem = { title: 'CATS', content: 'I am a cat', folderId: '111111111111111111111100' };
 
       return chai
         .request(app)
@@ -204,6 +220,23 @@ describe('Before and After Hooks', function() {
           const res = err.response;
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Missing title in request body');
+        })
+        .then(() => {
+          expect(spy).to.not.have.been.called();
+        });
+    });
+
+    it('should catch errors and respond properly', function() {
+      const spy = chai.spy();
+      let newItem = { title: 'CATS', content: 'I am a cat', folderId: '111111111111111111111100' };
+      sandbox.stub(express.response, 'json').throws('TypeError');
+      return chai
+        .request(app)
+        .post('/v3/notes/')
+        .send(newItem)
+        .then(spy)
+        .catch(err => {
+          expect(err).to.have.status(500);
         })
         .then(() => {
           expect(spy).to.not.have.been.called();
@@ -290,6 +323,23 @@ describe('Before and After Hooks', function() {
           let res = err.response;
           expect(res).to.have.status(404);
           expect(res.body.message).to.equal('Not Found');
+        })
+        .then(() => {
+          expect(spy).to.not.have.been.called();
+        });
+    });
+
+    it('should catch errors and respond properly', function() {
+      const spy = chai.spy();
+      let updateItem = { title: 'DOGS', id: '000000000000000000000000' };
+      sandbox.stub(express.response, 'json').throws('TypeError');
+      return chai
+        .request(app)
+        .put('/v3/notes/000000000000000000000000')
+        .send(updateItem)
+        .then(spy)
+        .catch(err => {
+          expect(err).to.have.status(500);
         })
         .then(() => {
           expect(spy).to.not.have.been.called();

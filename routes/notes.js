@@ -129,9 +129,7 @@ router.delete('/notes/:id', (req, res, next) => {
         next();
       }
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(next);
 });
 
 module.exports = router;
