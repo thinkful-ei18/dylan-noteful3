@@ -8,13 +8,15 @@ const mongoose = require('mongoose');
 
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/notes', (req, res, next) => {
-  const { searchTerm } = req.query;
-  const [ filter, projection ] = [ {}, {} ];
+  const { searchTerm, folderId } = req.query;
+  const filter = folderId ? {folderId} : {};
+  const projection = {};
   if (searchTerm) {
     filter.$text = { $search: searchTerm };
     projection.score = { $meta: 'textScore' };
   }
   Note.find(filter, projection)
+    .select('title content created folderId id')
     .sort(projection)
     .then(response => {
       res.json(response);
@@ -33,6 +35,7 @@ router.get('/notes/:id', (req, res, next) => {
   }
 
   Note.findById(req.params.id)
+    .select('title content created folderId id')
     .then(response => {
       if (response) {
         res.json(response);
@@ -58,8 +61,10 @@ router.post('/notes', (req, res, next) => {
 
   const newItem = {
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
   };
+
+  req.body.folderId ? newItem.folderId = req.body.folderId : newItem;
 
   Note.create(newItem)
     .then(response => {
@@ -93,7 +98,7 @@ router.put('/notes/:id', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-  const updateFields = ['title', 'content'];
+  const updateFields = ['title', 'content', 'folderId'];
   updateFields.forEach(field => {
     if (field in req.body) {
       updateItem[field] = req.body[field];

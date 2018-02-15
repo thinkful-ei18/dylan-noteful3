@@ -7,14 +7,7 @@ const mongoose = require('mongoose');
 
 
 router.get('/folders', (req, res, next) => {
-  const { searchTerm } = req.query;
-  const [filter, projection] = [{}, {}];
-  if (searchTerm) {
-    filter.$text = { $search: searchTerm };
-    projection.score = { $meta: 'textScore' };
-  }
-  Folder.find(filter, projection)
-    .sort(projection)
+  Folder.find()
     .then(response => {
       res.json(response);
     })
@@ -40,7 +33,7 @@ router.get('/folders/:id', (req, res, next) => {
         next();
       }
     })
-    .catch(next);
+    .catch(err => next(err));
 });
 
 router.post('/folders', (req, res, next) => {
@@ -48,7 +41,7 @@ router.post('/folders', (req, res, next) => {
     name: req.body.name
   };
   if (!req.body.name) {
-    const err = new Error('Name Field is missing');
+    const err = new Error('Missing title in request body');
     err.status = 400;
     return next(err);
   }
@@ -71,19 +64,19 @@ router.post('/folders', (req, res, next) => {
 
 router.put('/folders/:id', (req, res, next) => {
   if (!req.body.name) {
-    const err = new Error('Name Field is missing');
+    const err = new Error('Missing name in request body');
     err.status = 400;
     return next(err);
   }
 
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    const err = new Error(`${req.params.id} is not a valid id.`);
+    const err = new Error(`${req.params.id} is not a valid ID`);
     err.status = 400;
     return next(err);
   }
 
   if (req.params.id !== req.body.id) {
-    const err = new Error(`Body: ${req.body.id} and Params: ${req.params.id} id must match`);
+    const err = new Error(`Params id: ${req.params.id} and Body id: ${req.body.id} must match`);
     err.status = 400;
     return next(err);
   }
@@ -113,8 +106,12 @@ router.put('/folders/:id', (req, res, next) => {
 router.delete('/folders/:id', (req, res, next) => {
   const { id } = req.params;
   Folder.findByIdAndRemove(id)
-    .then(() => {
-      res.status(204).end();
+    .then(response => {
+      if (response) {
+        res.status(204).end();
+      } else {
+        next();
+      }     
     });
 });
 
