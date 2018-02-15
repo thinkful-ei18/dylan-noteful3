@@ -53,21 +53,20 @@ router.post('/folders', (req, res, next) => {
     return next(err);
   }
 
-  Folder.find({name: newFolder.name})
-    .then((folder) => {
-      if (folder.length > 0) {
-        const err = new Error('Folder name already exists');
-        err.status = 400;
-        throw err;
-      }})
-    .then(() => Folder.create(newFolder))
+  Folder.create(newFolder)
     .then(response => {
       res
         .status(201)
         .location(`${req.originalUrl}/${response.id}`)
         .json(response);
     })
-    .catch(next);
+    .catch(err => {
+      if (err.code === 11000) {
+        err = new Error('Folder name already exists');
+        err.status = 400;
+      }
+      next(err);
+    });
 });
 
 router.put('/folders/:id', (req, res, next) => {
