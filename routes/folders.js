@@ -58,18 +58,20 @@ router.post('/folders', (req, res, next) => {
       if (folder.length > 0) {
         const err = new Error('Folder name already exists');
         err.status = 400;
-        return next(err);
-      } else {
-        Folder.create(newFolder).then(response => {
-          console.log(response)
-          res
-            .status(201)
-            .location(`${req.originalUrl}/${response.id}`)
-            .json(response);
-        });
-      }
+        throw err;
+      }})
+    .then(() => Folder.create(newFolder))
+    .then(response => {
+      res
+        .status(201)
+        .location(`${req.originalUrl}/${response.id}`)
+        .json(response);
     })
     .catch(next);
+});
+
+router.put('/folders/:id', (req, res, next) => {
+
 });
 
 module.exports = router;
