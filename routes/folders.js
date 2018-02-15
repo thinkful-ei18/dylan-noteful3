@@ -122,7 +122,7 @@ router.delete('/folders/:id', (req, res, next) => {
         err.status = 400;
         return next(err);
       }
-      reeturn Folder.findByIdAndRemove(id);
+      return Folder.findByIdAndRemove(id);
     })
     .then(response => {
       if (response) {
