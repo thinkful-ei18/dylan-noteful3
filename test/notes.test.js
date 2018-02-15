@@ -89,9 +89,6 @@ describe('GET notes/:id', function() {
       .get('/v3/notes')
       .then(response => {
         itemId = response.body[0].id;
-        return itemId;
-      })
-      .then(itemId => {
         return chai.request(app).get(`/v3/notes/${itemId}`);
       })
       .then(response => {
