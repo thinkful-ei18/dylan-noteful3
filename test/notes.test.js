@@ -107,13 +107,13 @@ describe('GET notes/:id', function() {
       .request(app)
       .get(`/v3/notes/${badId}`)
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
       .catch(err => {
         const res = err.response;
         expect(res).to.have.status(400);
         expect(res.body.message).to.equal(`${badId} is not a valid ID`);
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 
@@ -124,13 +124,13 @@ describe('GET notes/:id', function() {
       .request(app)
       .get(`/v3/notes/${badId}`)
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
       .catch(err => {
         const res = err.response;
         expect(res).to.have.status(404);
         expect(res.body.message).to.equal('Not Found');
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 });
@@ -166,13 +166,13 @@ describe('POST /notes', function() {
       .post('/v3/notes')
       .send(newItem)
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
       .catch(err => {
         const res = err.response;
         expect(res).to.have.status(400);
         expect(res.body.message).to.equal('Missing title in request body');
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 });
@@ -213,15 +213,14 @@ describe('PUT notes/:id', function() {
       .put('/v3/notes/000000000000000000000000')
       .send(updateItem)
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
+
       .catch(err => {
         let res = err.response;
         expect(res).to.have.status(400);
-        expect(res.body.message).to.equal(
-          'Params id: 000000000000000000000000 and Body id: undefined must match'
-        );
+        expect(res.body.message).to.equal('Params id: 000000000000000000000000 and Body id: undefined must match');
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 
@@ -235,15 +234,13 @@ describe('PUT notes/:id', function() {
       .put('/v3/notes/00000000000000000000000')
       .send(updateItem)
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
       .catch(err => {
         let res = err.response;
         expect(res).to.have.status(400);
-        expect(res.body.message).to.equal(
-          '00000000000000000000000 is not a valid ID'
-        );
+        expect(res.body.message).to.equal('00000000000000000000000 is not a valid ID');
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 
@@ -256,13 +253,13 @@ describe('PUT notes/:id', function() {
       .put('/v3/notes/000000000000000000000009')
       .send(updateItem)
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
       .catch(err => {
         let res = err.response;
         expect(res).to.have.status(404);
         expect(res.body.message).to.equal('Not Found');
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 });
@@ -295,13 +292,13 @@ describe('DELETE /notes/:id', function() {
       .request(app)
       .delete('/v3/notes/000000000000000000000009')
       .then(spy)
-      .then(() => {
-        expect(spy).to.not.have.been.called();
-      })
       .catch(err => {
         const res = err.response;
         expect(res).to.have.status(404);
         expect(res.body.message).to.equal('Not Found');
+      })
+      .then(() => {
+        expect(spy).to.not.have.been.called();
       });
   });
 });
