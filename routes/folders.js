@@ -37,7 +37,36 @@ router.get('/folders/:id', (req, res, next) => {
       if (folder) {
         res.json(folder);
       } else {
-        res.status(404).json({message: `${id} does not exist`, status: 404});
+        next();
+      }
+    })
+    .catch(next);
+});
+
+router.post('/folders', (req, res, next) => {
+  const newFolder = {
+    name: req.body.name
+  };
+  if (!req.body.name) {
+    const err = new Error('Name Field is missing');
+    err.status = 400;
+    return next(err);
+  }
+
+  Folder.find({name: newFolder.name})
+    .then((folder) => {
+      if (folder.length > 0) {
+        const err = new Error('Folder name already exists');
+        err.status = 400;
+        return next(err);
+      } else {
+        Folder.create(newFolder).then(response => {
+          console.log(response)
+          res
+            .status(201)
+            .location(`${req.originalUrl}/${response.id}`)
+            .json(response);
+        });
       }
     })
     .catch(next);
