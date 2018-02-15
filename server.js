@@ -8,6 +8,7 @@ mongoose.Promise = global.Promise;
 const { PORT, MONGODB_URI } = require('./config');
 
 const notesRouter = require('./routes/notes');
+const foldersRouter = require('./routes/folders');
 
 // Create an Express application
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // Mount router on "/api"
+app.use('/v3', foldersRouter);
 app.use('/v3', notesRouter);
 
 // Catch-all 404
