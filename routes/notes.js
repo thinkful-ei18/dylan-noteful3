@@ -16,7 +16,8 @@ router.get('/notes', (req, res, next) => {
     projection.score = { $meta: 'textScore' };
   }
   Note.find(filter, projection)
-    .select('title content created folderId id')
+    .select('title content created folderId id tags')
+    .populate('tags')
     .sort(projection)
     .then(response => {
       res.json(response);

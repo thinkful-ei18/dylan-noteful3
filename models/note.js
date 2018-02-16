@@ -7,7 +7,7 @@ const noteSchema = mongoose.Schema({
   content: { type: String, index: true },
   created: { type: Date, default: Date.now },
   folderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder' },
-  tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag'}]
+  tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }]
 });
 
 noteSchema.index({ title: 'text', content: 'text' }, {weights: {title: 2, content: 1}});

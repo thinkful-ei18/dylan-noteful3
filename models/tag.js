@@ -6,7 +6,6 @@ const tagSchema = new mongoose.Schema({
   name: {type: String, unique: true}
 });
 
-const Tag = mongoose.model('Tag', tagSchema);
 
 tagSchema.set('toObject', {
   transform: function(doc, ret) {
@@ -15,5 +14,7 @@ tagSchema.set('toObject', {
     delete ret.__v;
   }
 });
+
+const Tag = mongoose.model('Tag', tagSchema);
 
 module.exports = {Tag};
