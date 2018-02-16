@@ -338,7 +338,7 @@ describe('Before and After Hooks', function() {
   });
 
   describe('DELETE /tags/:id', function() {
-    it('should delete a tags with the proper id', function() {
+    it('should delete a tags with the proper id with associated notes', function() {
 
       return chai
         .request(app)
@@ -357,7 +357,16 @@ describe('Before and After Hooks', function() {
         });
     });
 
-    it.only('should 404 with an id that does not exist', function() {
+    it('should delete a tag with no note association', function() {
+      return chai
+        .request(app)
+        .delete('/v3/tags/222222222222222222222203')
+        .then(response => {
+          expect(response).to.have.status(204);
+        });
+    });
+
+    it('should 404 with an id that does not exist', function() {
       const spy = chai.spy();
 
       return chai
