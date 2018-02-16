@@ -13,6 +13,8 @@ const mongoose = require('mongoose');
 const { TEST_MONGODB_URI } = require('../config');
 const { Note } = require('../models/note');
 const seedData = require('../db/seed/notes');
+const { Tag } = require('../models/tag');
+const seedTags = require('../db/seed/tags');
 
 const sinon = require('sinon');
 const sandbox = sinon.sandbox.create();
@@ -22,7 +24,10 @@ describe('Before and After Hooks', function() {
   });
 
   beforeEach(function() {
-    return Note.insertMany(seedData).then(() => Note.ensureIndexes());
+    return Note.insertMany(seedData)
+      .then(() => Note.ensureIndexes())
+      .then(() => Tag.insertMany(seedTags))
+      .then(() => Tag.ensureIndexes());
   });
 
   afterEach(function() {
@@ -80,6 +85,24 @@ describe('Before and After Hooks', function() {
           expect(response.body).to.have.length(4);
           return Note.find({
             folderId: '111111111111111111111100'
+          }).count();
+        })
+        .then(count => {
+          expect(count).to.equal(response.body.length);
+        });
+    });
+
+    it('should return a filtered list of notes if there is a tagId', function() {
+      let response;
+      return chai
+        .request(app)
+        .get('/v3/notes?tagId=222222222222222222222203')
+        .then(_response => {
+          response = _response;
+          expect(response).to.have.status(200);
+          expect(response.body).to.have.length(0);
+          return Note.find({
+            tags: '222222222222222222222203'
           }).count();
         })
         .then(count => {
@@ -190,7 +213,12 @@ describe('Before and After Hooks', function() {
 
   describe('POST /notes', function() {
     it('should post a new note with proper attributes', function() {
-      let newItem = { title: 'CATS', content: 'I am a cat', folderId: '111111111111111111111100' };
+      let newItem = {
+        title: 'CATS',
+        content: 'I am a cat',
+        folderId: '111111111111111111111100',
+        tags: ['222222222222222222222203']
+      };
 
       return chai
         .request(app)
@@ -226,9 +254,38 @@ describe('Before and After Hooks', function() {
         });
     });
 
+    it('should 400 error when tags are invalid', function() {
+      let newItem = {
+        title: 'CATS',
+        content: 'I am a cat',
+        folderId: '111111111111111111111100',
+        tags: ['22222222222222222222220']
+      };
+      let spy = chai.spy();
+      return chai
+        .request(app)
+        .post('/v3/notes')
+        .send(newItem)
+        .then(spy)
+        .catch(err => {
+          const res = err.response;
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(
+            '22222222222222222222220 is not a valid id'
+          );
+        })
+        .then(() => {
+          expect(spy).to.not.have.been.called();
+        });
+    });
+
     it('should catch errors and respond properly', function() {
       const spy = chai.spy();
-      let newItem = { title: 'CATS', content: 'I am a cat', folderId: '111111111111111111111100' };
+      let newItem = {
+        title: 'CATS',
+        content: 'I am a cat',
+        folderId: '111111111111111111111100'
+      };
       sandbox.stub(express.response, 'json').throws('TypeError');
       return chai
         .request(app)
@@ -246,7 +303,7 @@ describe('Before and After Hooks', function() {
 
   describe('PUT notes/:id', function() {
     it('should update a note with proper validation', function() {
-      let updateItem = { title: 'DOGS', id: '000000000000000000000000' };
+      let updateItem = { title: 'DOGS', id: '000000000000000000000000', tags: ['222222222222222222222203'] };
 
       return chai
         .request(app)
@@ -323,6 +380,32 @@ describe('Before and After Hooks', function() {
           let res = err.response;
           expect(res).to.have.status(404);
           expect(res.body.message).to.equal('Not Found');
+        })
+        .then(() => {
+          expect(spy).to.not.have.been.called();
+        });
+    });
+
+    it('should 400 error when tags are invalid', function() {
+      let newItem = {
+        title: 'CATS',
+        content: 'I am a cat',
+        folderId: '111111111111111111111100',
+        tags: ['22222222222222222222220'],
+        id: '000000000000000000000000'
+      };
+      let spy = chai.spy();
+      return chai
+        .request(app)
+        .put('/v3/notes/000000000000000000000000')
+        .send(newItem)
+        .then(spy)
+        .catch(err => {
+          const res = err.response;
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(
+            '22222222222222222222220 is not a valid id'
+          );
         })
         .then(() => {
           expect(spy).to.not.have.been.called();
