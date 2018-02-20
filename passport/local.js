@@ -4,12 +4,16 @@ const LocalStrategy = require('passport-local').Strategy;
 const { User } = require('../models/user');
 
 const localStrategy = new LocalStrategy((username, password, done) => {
+  let user;
   User.findOne({ username })
-    .then(user => {
+    .then(results => {
+      user = results;
       if (!user) {
         return done(null, false);
       }
-      const isValid = user.validatePassword(password);
+      return user.validatePassword(password);
+    })
+    .then(isValid => {
       if (!isValid) {
         return done(null, false);
       }
