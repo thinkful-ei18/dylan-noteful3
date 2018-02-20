@@ -110,18 +110,21 @@ router.post('/notes', (req, res, next) => {
 router.put('/notes/:id', (req, res, next) => {
   const { id } = req.params;
   const updateItem = {tags: []};
+
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     const err = new Error(`${req.params.id} is not a valid ID`);
     err.status = 400;
     return next(err);
   }
-  if (!(id && req.body.id && id === req.body.id)) {
+
+  if (!(id && id === req.body.id)) {
     const err = new Error(
       `Params id: ${id} and Body id: ${req.body.id} must match`
     );
     err.status = 400;
     return next(err);
   }
+
   const updateFields = ['title', 'content', 'folderId'];
   updateFields.forEach(field => {
     if (field in req.body) {

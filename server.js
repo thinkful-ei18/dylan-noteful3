@@ -3,13 +3,17 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const passport = require('passport');
 mongoose.Promise = global.Promise;
 
 const { PORT, MONGODB_URI } = require('./config');
+const localStrategy = require('./passport/local');
 
 const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
 const tagsRouter = require('./routes/tags');
+const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
 
 // Create an Express application
 const app = express();
@@ -18,6 +22,8 @@ const app = express();
 app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
   skip: () => process.env.NODE_ENV === 'test'
 }));
+
+passport.use(localStrategy);
 
 // Create a static webserver
 app.use(express.static('public'));
@@ -29,6 +35,8 @@ app.use(express.json());
 app.use('/v3', foldersRouter);
 app.use('/v3', notesRouter);
 app.use('/v3', tagsRouter);
+app.use('/v3', usersRouter);
+app.use('/v3', authRouter);
 
 // Catch-all 404
 app.use(function (req, res, next) {
