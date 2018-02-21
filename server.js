@@ -9,6 +9,7 @@ mongoose.Promise = global.Promise;
 
 const { PORT, MONGODB_URI } = require('./config');
 const localStrategy = require('./passport/local');
+const jwtStrategy = require('./passport/jwt');
 
 const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
@@ -25,6 +26,7 @@ app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
 }));
 
 passport.use(localStrategy);
+passport.use(jwtStrategy);
 
 // Create a static webserver
 app.use(express.static('public'));
@@ -33,11 +35,15 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // Mount router on "/api"
+
+app.use('/v3', usersRouter);
+app.use('/v3', authRouter);
+
+app.use(passport.authenticate('jwt', { session: false, failWithError: true }));
+
 app.use('/v3', foldersRouter);
 app.use('/v3', notesRouter);
 app.use('/v3', tagsRouter);
-app.use('/v3', usersRouter);
-app.use('/v3', authRouter);
 
 // Catch-all 404
 app.use(function (req, res, next) {
