@@ -1,10 +1,11 @@
 'use strict';
-
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
 mongoose.Promise = global.Promise;
+
 
 const { PORT, MONGODB_URI } = require('./config');
 const localStrategy = require('./passport/local');
