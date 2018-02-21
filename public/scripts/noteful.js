@@ -139,11 +139,13 @@ const noteful = (function () {
 
       const noteId = getNoteIdFromElement(event.currentTarget);
 
-      api.details(`/v3/notes/${noteId}`)
-        .then((response) => {
+      api
+        .details(`/v3/notes/${noteId}`)
+        .then(response => {
           store.currentNote = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -153,11 +155,13 @@ const noteful = (function () {
 
       store.currentQuery.searchTerm = $(event.currentTarget).find('input').val();
 
-      api.search('/v3/notes', store.currentQuery)
+      api
+        .search('/v3/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(store.handleErrors);
     });
   }
 
@@ -176,7 +180,8 @@ const noteful = (function () {
       };
 
       if (store.currentNote.id) {
-        api.update(`/v3/notes/${noteObj.id}`, noteObj)
+        api
+          .update(`/v3/notes/${noteObj.id}`, noteObj)
           .then(updateResponse => {
             store.currentNote = updateResponse;
             return api.search('/v3/notes', store.currentQuery);
@@ -184,9 +189,11 @@ const noteful = (function () {
           .then(response => {
             store.notes = response;
             render();
-          });
+          })
+          .catch(handleErrors);
       } else {
-        api.create('/v3/notes', noteObj)
+        api
+          .create('/v3/notes', noteObj)
           .then(createResponse => {
             store.currentNote = createResponse;
             return api.search('/v3/notes', store.currentQuery);
@@ -194,7 +201,8 @@ const noteful = (function () {
           .then(response => {
             store.notes = response;
             render();
-          });
+          })
+          .catch(handleErrors);
       }
     });
   }
@@ -212,7 +220,8 @@ const noteful = (function () {
       event.preventDefault();
       const noteId = getNoteIdFromElement(event.currentTarget);
 
-      api.remove(`/v3/notes/${noteId}`)
+      api
+        .remove(`/v3/notes/${noteId}`)
         .then(() => {
           if (noteId === store.currentNote.id) {
             store.currentNote = {};
@@ -222,7 +231,8 @@ const noteful = (function () {
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -239,11 +249,13 @@ const noteful = (function () {
         store.currentNote = {};
       }
 
-      api.search('/v3/notes', store.currentQuery)
+      api
+        .search('/v3/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -252,16 +264,17 @@ const noteful = (function () {
       event.preventDefault();
 
       const newFolderName = $('.js-new-folder-entry').val();
-      api.create('/v3/folders', { name: newFolderName })
+      api
+        .create('/v3/folders', { name: newFolderName })
         .then(() => {
           $('.js-new-folder-entry').val();
           return api.search('/v3/folders');
-        }).then(response => {
+        })
+        .then(response => {
           store.folders = response;
           render();
-        }).catch(err => {
-          $('.js-error-message').text(err.responseJSON.message);
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -277,17 +290,19 @@ const noteful = (function () {
         store.currentNote = {};
       }
 
-      api.remove(`/v3/folders/${folderId}`)
+      api
+        .remove(`/v3/folders/${folderId}`)
         .then(() => {
           const notesPromise = api.search('/v3/notes');
           const folderPromise = api.search('/v3/folders');
           return Promise.all([notesPromise, folderPromise]);
         })
-        .then( ([notes, folders])  => {
+        .then(([notes, folders]) => {
           store.notes = notes;
           store.folders = folders;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -304,11 +319,13 @@ const noteful = (function () {
       //TODO; loop over tags, if not a match, then clear
       store.currentNote = {};
 
-      api.search('/v3/notes', store.currentQuery)
+      api
+        .search('/v3/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -317,16 +334,16 @@ const noteful = (function () {
       event.preventDefault();
 
       const newTagName = $('.js-new-tag-entry').val();
-      api.create('/v3/tags', { name: newTagName })
+      api
+        .create('/v3/tags', { name: newTagName })
         .then(() => {
           return api.search('/v3/tags');
-        }).then(response => {
+        })
+        .then(response => {
           store.tags = response;
           render();
         })
-        .catch(err => {
-          console.error(err);
-        });
+        .catch(handleErrors);
     });
   }
 
@@ -342,7 +359,8 @@ const noteful = (function () {
       //TODO; loop over tags, if not a match, then clear
       store.currentNote = {};
 
-      api.remove(`/v3/tags/${tagId}`)
+      api
+        .remove(`/v3/tags/${tagId}`)
         .then(() => {
           return api.search('/v3/tags');
         })
@@ -353,7 +371,8 @@ const noteful = (function () {
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -389,10 +408,12 @@ const noteful = (function () {
 
       api.create('/v3/login', loginUser)
         .then(response => {
+          store.authToken = response.authToken;
           store.authorized = true;
           loginForm[0].reset();
 
-          store.currentUser = response;
+          const payload = JSON.parse(atob(response.authToken.split('.')[1]));
+          store.currentUser = payload.user;
 
           return Promise.all([
             api.search('/v3/notes'),
