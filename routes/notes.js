@@ -4,6 +4,8 @@ const express = require('express');
 // Create an router instance (aka "mini-app")
 const router = express.Router();
 const { Note } = require('../models/note');
+const { Folder } = require('../models/folder');
+const { Tag } = require('../models/tag');
 const mongoose = require('mongoose');
 
 /* ========== GET/READ ALL ITEM ========== */
@@ -90,8 +92,20 @@ router.post('/notes', (req, res, next) => {
       }
     });
   }
+  const checkPromiseArray = [];
+  if (newItem.folderId) {
+    checkPromiseArray.push(checkFolderPromise(newItem.folderId, req.user.id));
+  }
+  if (newItem.tags.length > 0) {
+    newItem.tags.forEach(tagId => {
+      checkPromiseArray.push(checkTagPromise(tagId, req.user.id));
+    });
+  }
 
-  Note.create(newItem)
+  Promise.all(checkPromiseArray)
+    .then(() => {
+      return Note.create(newItem);
+    })
     .then(response => {
       if (response) {
         return Note.findById(response.id)
@@ -159,7 +173,20 @@ router.put('/notes/:id', (req, res, next) => {
     }
   });
 
-  Note.findOne({ _id: id, userId })
+  const checkPromiseArray = [];
+  if (updateItem.folderId) {
+    checkPromiseArray.push(checkFolderPromise(updateItem.folderId, req.user.id));
+  }
+  if (updateItem.tags.length > 0) {
+    updateItem.tags.forEach(tagId => {
+      checkPromiseArray.push(checkTagPromise(tagId, req.user.id));
+    });
+  }
+
+  Promise.all(checkPromiseArray)
+    .then(() => {
+      return Note.findOne({ _id: id, userId });
+    })
     .then(response => response.update(updateItem, { new: true }))
     .then(response => {
       if (response) {
@@ -183,7 +210,7 @@ router.delete('/notes/:id', (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  Note.findOneAndRemove({_id: id, userId})
+  Note.findOneAndRemove({ _id: id, userId })
     .then(response => {
       if (response) {
         return res.status(204).end();
@@ -194,5 +221,38 @@ router.delete('/notes/:id', (req, res, next) => {
     })
     .catch(next);
 });
+
+/* ========== HELPERS ========== */
+function checkFolderPromise(fId, uId) {
+  return new Promise((resolve, reject) => {
+    if (!fId) {
+      return resolve('valid');
+    }
+    Folder.find({ _id: fId, userId: uId }).then(response => {
+      if (response.length > 0) {
+        return resolve('valid');
+      }
+      const err = new Error('That is not a valid folder');
+      err.status = 400;
+      return reject(err);
+    });
+  });
+}
+
+function checkTagPromise(tId, uId) {
+  return new Promise((resolve, reject) => {
+    if (!tId) {
+      return resolve('valid');
+    }
+    Tag.find({ _id: tId, userId: uId }).then(response => {
+      if (response.length > 0) {
+        return resolve('valid');
+      }
+      const err = new Error(`${tId} is not a valid tag`);
+      err.status = 400;
+      return reject(err);
+    });
+  });
+}
 
 module.exports = router;

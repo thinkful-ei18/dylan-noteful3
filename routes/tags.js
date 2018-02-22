@@ -6,7 +6,8 @@ const { Tag } = require('../models/tag');
 const { Note } = require('../models/note');
 
 router.get('/tags', (req, res, next) => {
-  Tag.find()
+  const userId = req.user.id;
+  Tag.find({userId})
     .then(response => {
       res.json(response);
     })
@@ -14,6 +15,7 @@ router.get('/tags', (req, res, next) => {
 });
 
 router.get('/tags/:id', (req, res, next) => {
+  const userId = req.user.id;
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error(`${id} is not a valid ID`);
@@ -21,7 +23,7 @@ router.get('/tags/:id', (req, res, next) => {
     return next(err);
   }
 
-  Tag.findById(id)
+  Tag.findOne({_id: id, userId})
     .then(response => {
       if (response) {
         res.json(response);
@@ -33,7 +35,7 @@ router.get('/tags/:id', (req, res, next) => {
 });
 
 router.post('/tags', (req, res, next) => {
-  const newTag = { name: req.body.name };
+  const newTag = { name: req.body.name, userId: req.user.id };
 
   if (!req.body.name) {
     const err = new Error('Missing name in request body');
@@ -62,6 +64,7 @@ router.post('/tags', (req, res, next) => {
 });
 
 router.put('/tags/:id', (req, res, next) => {
+  const userId = req.user.id;
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     const err = new Error(`${req.params.id} is not a valid ID`);
     err.status = 400;
@@ -86,10 +89,11 @@ router.put('/tags/:id', (req, res, next) => {
 
   const updateItem = {
     name: req.body.name,
-    id: req.body.id
+    id: req.body.id,
+    userId
   };
 
-  Tag.findByIdAndUpdate(id, updateItem, { new: true })
+  Tag.findOneAndUpdate({_id: id, userId}, updateItem, { new: true })
     .then(response => {
       if (response) {
         res.status(200).json(response);
@@ -108,8 +112,8 @@ router.put('/tags/:id', (req, res, next) => {
 
 router.delete('/tags/:id', (req, res, next) => {
   const { id } = req.params;
-
-  const removeTagPromise = Tag.findByIdAndRemove(id);
+  const userId = req.user.id;
+  const removeTagPromise = Tag.findOneAndRemove({_id: id, userId});
   const removeTagOnNotesPromise = Note.update(
     {},
     { $pull: { tags: id } },
