@@ -184,7 +184,6 @@ router.delete('/notes/:id', (req, res, next) => {
   const userId = req.user.id;
 
   Note.findById(id).then(response => {
-    console.log(response);
     if (response.userId.toString() !== userId) {
       const err = new Error('You can only delete your own notes');
       err.status = 400;
