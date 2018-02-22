@@ -183,23 +183,16 @@ router.delete('/notes/:id', (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  Note.findById(id).then(response => {
-    if (response.userId.toString() !== userId) {
-      const err = new Error('You can only delete your own notes');
+  Note.findOneAndRemove({_id: id, userId})
+    .then(response => {
+      if (response) {
+        return res.status(204).end();
+      }
+      const err = new Error('You do not have permission to delete this note');
       err.status = 400;
-      return next(err);
-    }
-  }).then(() => {
-    return Note.deleteOne({ _id: id, userId })
-      .then(response => {
-        if (response) {
-          res.status(204).end();
-        } else {
-          next();
-        }
-      })
-      .catch(next);
-  });  
+      next(err);
+    })
+    .catch(next);
 });
 
 module.exports = router;
