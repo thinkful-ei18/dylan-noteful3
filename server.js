@@ -11,6 +11,8 @@ const { PORT, MONGODB_URI } = require('./config');
 const localStrategy = require('./passport/local');
 const jwtStrategy = require('./passport/jwt');
 
+
+//export router as object
 const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
 const tagsRouter = require('./routes/tags');
