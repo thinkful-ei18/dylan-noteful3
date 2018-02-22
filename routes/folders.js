@@ -8,7 +8,9 @@ const mongoose = require('mongoose');
 
 
 router.get('/folders', (req, res, next) => {
-  Folder.find()
+  const userId = req.user.id;
+  Folder.find({userId})
+    .select('name id')
     .then(response => {
       res.json(response);
     })
@@ -19,6 +21,7 @@ router.get('/folders', (req, res, next) => {
 
 router.get('/folders/:id', (req, res, next) => {
   const { id } = req.params;
+  const userId = req.user.id;
 
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     const err = new Error(`${req.params.id} is not a valid ID`);
@@ -26,7 +29,7 @@ router.get('/folders/:id', (req, res, next) => {
     return next(err);
   }
 
-  Folder.findById(id)
+  Folder.findOne({_id: id, userId})
     .then(folder => {
       if (folder) {
         res.json(folder);
@@ -38,8 +41,10 @@ router.get('/folders/:id', (req, res, next) => {
 });
 
 router.post('/folders', (req, res, next) => {
+  const userId = req.user.id;
   const newFolder = {
-    name: req.body.name
+    name: req.body.name,
+    userId: userId
   };
   if (!req.body.name) {
     const err = new Error('Missing title in request body');
@@ -64,6 +69,7 @@ router.post('/folders', (req, res, next) => {
 });
 
 router.put('/folders/:id', (req, res, next) => {
+  const userId = req.user.id;
   if (!req.body.name) {
     const err = new Error('Missing name in request body');
     err.status = 400;
@@ -87,10 +93,10 @@ router.put('/folders/:id', (req, res, next) => {
     id: req.body.id
   };
 
-  Folder.findByIdAndUpdate(req.params.id, updateFolder, { new: true })
+  Folder.findOneAndUpdate({_id: req.params.id, userId}, updateFolder, { new: true })
     .then(response => {
       if (response) {
-        res.status(200).json(response);
+        res.status(200).json(response.serialize());
       } else {
         next();
       }
@@ -105,6 +111,7 @@ router.put('/folders/:id', (req, res, next) => {
 });
 
 router.delete('/folders/:id', (req, res, next) => {
+  const userId = req.user.id;
   const { id } = req.params;
   // Folder.findByIdAndRemove(id)
   //   .then(response => {
@@ -122,7 +129,7 @@ router.delete('/folders/:id', (req, res, next) => {
         err.status = 400;
         return next(err);
       }
-      return Folder.findByIdAndRemove(id);
+      return Folder.findOneAndRemove({_id: id, userId});
     })
     .then(response => {
       if (response) {
