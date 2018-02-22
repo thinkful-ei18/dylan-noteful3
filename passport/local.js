@@ -1,5 +1,4 @@
 'use strict';
-const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const { User } = require('../models/user');
 
@@ -19,7 +18,7 @@ const localStrategy = new LocalStrategy((username, password, done) => {
       }
       return done(null, user);
     })
-    .catch(err => {
+    .catch(err => {     
       done(err);
     });
 });

@@ -129,6 +129,8 @@ const noteful = (function () {
     showFailureMessage(err.responseJSON.message);
   }
 
+  
+
   /**
    * NOTES EVENT LISTENERS AND HANDLERS
    */
