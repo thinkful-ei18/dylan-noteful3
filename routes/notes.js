@@ -160,7 +160,7 @@ router.put('/notes/:id', (req, res, next) => {
   });
 
   Note.findOne({ _id: id, userId })
-    .update(updateItem, { new: true })
+    .then(response => response.update(updateItem, { new: true }))
     .then(response => {
       if (response) {
         return Note.findById(id)
