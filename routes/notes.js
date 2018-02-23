@@ -3,10 +3,13 @@
 const express = require('express');
 // Create an router instance (aka "mini-app")
 const router = express.Router();
+const passport = require('passport');
 const { Note } = require('../models/note');
 const { Folder } = require('../models/folder');
 const { Tag } = require('../models/tag');
 const mongoose = require('mongoose');
+
+router.use(passport.authenticate('jwt', { session: false, failWithError: true }));
 
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/notes', (req, res, next) => {
@@ -166,6 +169,9 @@ router.put('/notes/:id', (req, res, next) => {
   }
 
   Note.findById(id).then(response => {
+    if (!response) {
+      return next();
+    }
     if (response.userId.toString() !== userId) {
       const err = new Error('You can only update your own notes');
       err.status = 400;
@@ -215,9 +221,7 @@ router.delete('/notes/:id', (req, res, next) => {
       if (response) {
         return res.status(204).end();
       }
-      const err = new Error('You do not have permission to delete this note');
-      err.status = 400;
-      next(err);
+      next();
     })
     .catch(next);
 });

@@ -4,6 +4,10 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const { Tag } = require('../models/tag');
 const { Note } = require('../models/note');
+const passport = require('passport');
+router.use(
+  passport.authenticate('jwt', { session: false, failWithError: true })
+);
 
 router.get('/tags', (req, res, next) => {
   const userId = req.user.id;

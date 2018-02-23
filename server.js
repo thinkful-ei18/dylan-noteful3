@@ -41,7 +41,7 @@ app.use(express.json());
 app.use('/v3', usersRouter);
 app.use('/v3', authRouter);
 
-app.use(passport.authenticate('jwt', { session: false, failWithError: true }));
+// app.use(passport.authenticate('jwt', { session: false, failWithError: true }));
 
 app.use('/v3', foldersRouter);
 app.use('/v3', notesRouter);
